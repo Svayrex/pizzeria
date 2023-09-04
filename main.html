@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Пиццерия "Пицца Любовь"</title>
+</head>
+<body>
+    <header>
+        <h1>Добро пожаловать в пиццерию "Пицца Любовь"</h1>
+    </header>
+
+    <section id="menu">
+        <h2>Меню</h2>
+        <form id="pizza-form">
+            <ul>
+                <li>
+                    <h3>Пицца Маргарита</h3>
+                    <p>Свежие помидоры, моцарелла, базилик</p>
+                    <p>Цена: $10</p>
+                    <input type="checkbox" name="pizza" value="margarita">
+                </li>
+                <li>
+                    <h3>Пицца Пепперони</h3>
+                    <p>Пепперони, моцарелла, томатный соус</p>
+                    <p>Цена: $12</p>
+                    <input type="checkbox" name="pizza" value="pepperoni">
+                </li>
+                <li>
+                    <h3>Пицца Гавайская</h3>
+                    <p>Ветчина, ананасы, моцарелла, томатный соус</p>
+                    <p>Цена: $11</p>
+                    <input type="checkbox" name="pizza" value="hawaiian">
+                </li>
+            </ul>
+            <button type="submit">Добавить в заказ</button>
+        </form>
+    </section>
+
+    <section id="payment">
+        <h2>Способы оплаты</h2>
+        <ul>
+            <li>
+                <input type="radio" name="payment" id="credit-card" value="credit-card">
+                <label for="credit-card">Кредитная карта</label>
+            </li>
+            <li>
+                <input type="radio" name="payment" id="cash" value="cash">
+                <label for="cash">Наличные</label>
+            </li>
+        </ul>
+
+        <div id="credit-card-details" style="display: none;">
+            <h3>Реквизиты карты</h3>
+            <form>
+                <label for="card-number">Номер карты:</label>
+                <input type="text" id="card-number" name="card-number" required><br>
+
+                <label for="card-expiry">Срок действия (ММ/ГГ):</label>
+                <input type="text" id="card-expiry" name="card-expiry" required><br>
+
+                <label for="card-cvv">CVV код:</label>
+                <input type="text" id="card-cvv" name="card-cvv" required><br>
+
+                <button type="submit">Оплатить</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="address">
+        <h2>Введите ваш адрес доставки</h2>
+        <form id="order-form">
+            <label for="address-input">Адрес:</label>
+            <input type="text" id="address-input" name="address" required><br>
+            <button type="submit">Заказать</button>
+        </form>
+    </section>
+
+    <section id="order-confirmation" style="display: none;">
+        <h2>Подтверждение заказа</h2>
+        <p>Вы заказали:</p>
+        <ul id="ordered-items"></ul>
+        <p>Сумма заказа: $<span id="order-total">0.00</span></p>
+        <label for="payment-amount">Введите сумму для оплаты:</label>
+        <input type="text" id="payment-amount" required><br>
+        <button type="button" id="calculate-change">Рассчитать сдачу</button>
+        <p>Сдача: $<span id="change-amount">0</span></p>
+        <button type="button" id="confirm-payment">Подтвердить оплату</button>
+        <p id="payment-confirmation"></p>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 Пиццерия "Пицца Любовь"</p>
+    </footer>
+
+    <script>
+        const pizzaForm = document.getElementById('pizza-form');
+        const orderList = document.getElementById('ordered-items');
+        const orderTotal = document.getElementById('order-total');
+        const paymentAmountInput = document.getElementById('payment-amount');
+        const calculateChangeButton = document.getElementById('calculate-change');
+        const changeAmount = document.getElementById('change-amount');
+        const confirmPaymentButton = document.getElementById('confirm-payment');
+        const paymentConfirmation = document.getElementById('payment-confirmation');
+        const checkboxes = document.querySelectorAll('input[name="pizza"]');
+        
+        let selectedItems = [];
+        let selectedPaymentMethod = '';
+        let selectedAddress = '';
+        
+        pizzaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            selectedItems = [];
+            
+            checkboxes.forEach((checkbox) => {
+                if (checkbox.checked) {
+                    selectedItems.push(checkbox.value);
+                }
+            });
+            
+            if (selectedItems.length === 0) {
+                alert('Пожалуйста, выберите хотя бы одну пиццу.');
+                return;
+            }
+            
+            updateOrderSummary();
+            
+            pizzaForm.style.display = 'none';
+            document.querySelector('input[name="payment"]:checked').disabled = true;
+            document.getElementById('address-input').disabled = true;
+            document.getElementById('order-confirmation').style.display = 'block';
+        });
+        
+        function updateOrderSummary() {
+            orderList.innerHTML = '';
+            let total = 0;
+            selectedItems.forEach((item) => {
+                let itemName, itemPrice;
+                switch (item) {
+                    case 'margarita':
+                        itemName = 'Пицца Маргарита';
+                        itemPrice = 10.00;
+                        break;
+                    case 'pepperoni':
+                        itemName = 'Пицца Пепперони';
+                        itemPrice = 12.00;
+                        break;
+                    case 'hawaiian':
+                        itemName = 'Пицца Гавайская';
+                        itemPrice = 11.00;
+                        break;
+                    default:
+                        itemName = 'Неизвестная пицца';
+                        itemPrice = 0.00;
+                        break;
+                }
+                
+                const listItem = document.createElement('li');
+                listItem.textContent = `${itemName} - $${itemPrice.toFixed(2)}`;
+                orderList.appendChild(listItem);
+                total += itemPrice;
+            });
+            
+            orderTotal.textContent = total.toFixed(2);
+        }
+        
+        document.querySelectorAll('input[name="payment"]').forEach((radio) => {
+            radio.addEventListener('change', () => {
+                selectedPaymentMethod = radio.value;
+            });
+        });
+        
+        document.getElementById('address-input').addEventListener('input', (e) => {
+            selectedAddress = e.target.value;
+        });
+        
+        calculateChangeButton.addEventListener('click', () => {
+            const paymentAmount = parseFloat(paymentAmountInput.value);
+            const orderTotalAmount = parseFloat(orderTotal.textContent);
+            const change = paymentAmount - orderTotalAmount;
+            changeAmount.textContent = change.toFixed(2);
+        });
+        
+        confirmPaymentButton.addEventListener('click', () => {
+            const paymentAmount = parseFloat(paymentAmountInput.value);
+            const orderTotalAmount = parseFloat(orderTotal.textContent);
+            
+            if (paymentAmount < orderTotalAmount) {
+                alert('Введите корректную сумму оплаты.');
+                return;
+            }
+            
+            paymentConfirmation.textContent = `Спасибо за Ваш заказ! Вы заказали: ${selectedItems.map(item => {
+                switch (item) {
+                    case 'margarita':
+                        return 'Пицца Маргарита';
+                    case 'pepperoni':
+                        return 'Пицца Пепперони';
+                    case 'hawaiian':
+                        return 'Пицца Гавайская';
+                    default:
+                        return 'Неизвестная пицца';
+                }
+            }).join(', ')}. Сумма заказа: $${orderTotalAmount.toFixed(2)}. Способ оплаты: ${selectedPaymentMethod}. Адрес доставки: ${selectedAddress}.`;
+        });
+    </script>
+</body>
+</html>
